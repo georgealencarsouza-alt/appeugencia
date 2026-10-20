@@ -12,7 +12,7 @@ chegam padronizados, o que torna a edição automática viável.
 
 | Pasta | O que é | Status |
 |---|---|---|
-| [`primeiro-corte/`](primeiro-corte/) | Motor de edição: checa os takes, alinha com o roteiro e gera o primeiro corte no estilo da referência | Funcionando com vídeos sintéticos; falta testar com takes reais |
-| `app/` | Aplicação web (workspaces, briefing, referências, pauta, links do cliente) | A fazer |
+| [`primeiro-corte/`](primeiro-corte/) | Motor de edição: checa os takes, alinha com o roteiro e gera o primeiro corte no estilo da referência | Testado com takes e referências reais (celular e WhatsApp) |
+| [`app/`](app/) | Aplicação web: clientes, estilo, roteiro, kit de gravação com teleprompter, checagem, primeiro corte e aprovação pelo link | Fluxo completo funcionando localmente; briefing e roteiro com IA ainda não |
 
 Cada pasta tem seu próprio README com instalação e uso.

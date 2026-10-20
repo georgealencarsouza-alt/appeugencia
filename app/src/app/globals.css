@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+/*
+  Direção: um estúdio de gravação de bolso.
+  - Papel cinza-esverdeado frio e tinta quase preta: calmo, para quem passa o dia aqui.
+  - Petróleo para as ações da eugência.
+  - Vermelho "REC" só para o que pede ação (gravar, regravar, ajuste pedido).
+  - Amarelo marca-texto: o mesmo destaque das legendas dos vídeos.
+  - Atkinson Hyperlegible no corpo: o cliente final pode ser uma avó lendo no celular.
+*/
+@theme {
+  --color-papel: #f1f2ee;
+  --color-cartao: #ffffff;
+  --color-tinta: #16201f;
+  --color-tinta-2: #4a5553;
+  --color-tinta-3: #7b8582;
+  --color-linha: #d9dcd5;
+  --color-petroleo: #0e4f52;
+  --color-petroleo-escuro: #093a3c;
+  --color-petroleo-claro: #dcebea;
+  --color-rec: #d93a2b;
+  --color-rec-claro: #fbe4e0;
+  --color-marca: #ffd84d;
+  --color-marca-claro: #fff4c7;
+  --color-ok: #2f7a4b;
+  --color-ok-claro: #def0e3;
+
+  --font-titulo: "Bricolage Grotesque Variable", "Atkinson Hyperlegible", system-ui, sans-serif;
+  --font-corpo: "Atkinson Hyperlegible", system-ui, sans-serif;
+
+  --radius-cartao: 14px;
+}
+
+html {
+  background: var(--color-papel);
+  color: var(--color-tinta);
+  font-family: var(--font-corpo);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+h1, h2, h3 {
+  font-family: var(--font-titulo);
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
+  line-height: 1.1;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-marca);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* moldura 9:16, o formato que tudo aqui produz */
+.moldura {
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+  background: #0d1312;
+  overflow: hidden;
+}
+
+.marca-texto {
+  background: linear-gradient(transparent 55%, var(--color-marca) 55%, var(--color-marca) 92%, transparent 92%);
+}
+
+@keyframes pulso-rec {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+.ponto-rec {
+  width: 0.65em;
+  height: 0.65em;
+  border-radius: 999px;
+  background: var(--color-rec);
+  display: inline-block;
+  animation: pulso-rec 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ponto-rec { animation: none; }
+  * { scroll-behavior: auto !important; }
+}

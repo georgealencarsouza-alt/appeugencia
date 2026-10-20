@@ -47,6 +47,7 @@ def main(argv: list[str] | None = None) -> int:
     e.add_argument("-o", "--saida", required=True)
     e.add_argument("--sem-ia", action="store_true", help="só medições por código, sem modelo de visão")
     e.add_argument("--evidencias", help="salva as medições brutas neste JSON")
+    e.add_argument("--json", action="store_true", help="imprime resumo e pendências em JSON (para o app)")
     e.add_argument("referencias", nargs="+")
 
     r = sub.add_parser("renderizar", help="Renderiza de novo um plano.json (após ajuste manual)")
@@ -101,8 +102,12 @@ def main(argv: list[str] | None = None) -> int:
         ficha.salvar(a.saida)
         if a.evidencias:
             Path(a.evidencias).write_text(json.dumps(evid, ensure_ascii=False, indent=2), encoding="utf-8")
-        print(f"Ficha salva em {a.saida}: {ficha.resumo()}")
         pendentes = [k for k, v in ficha.origem.items() if v == "padrao"]
+        if a.json:
+            print(json.dumps({"resumo": ficha.resumo(), "pendentes": pendentes, "origem": ficha.origem},
+                             ensure_ascii=False))
+            return 0
+        print(f"Ficha salva em {a.saida}: {ficha.resumo()}")
         if pendentes:
             print(f"Campos que vieram do padrão (confirme): {', '.join(pendentes)}")
         return 0

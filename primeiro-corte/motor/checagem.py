@@ -120,7 +120,7 @@ def checar_take(caminho: str | Path, audio: np.ndarray | None = None) -> Checage
                           "Vídeo gravado na horizontal. Da próxima vez, segure o celular em pé."))
     if min(inf.largura, inf.altura) < 720:
         P.append(Problema("atencao", "resolucao_baixa",
-                          "Qualidade de imagem baixa. Use a câmera traseira ou ajuste para 1080p."))
+                          "Imagem em baixa resolução. Grave em 1080p ou mais e envie o arquivo original (o WhatsApp reduz a qualidade)."))
 
     # ---- áudio ----
     if inf.tem_audio:
