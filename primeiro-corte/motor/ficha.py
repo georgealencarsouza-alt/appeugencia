@@ -83,7 +83,7 @@ class Audio:
     normalizar: bool = True
     alvo_lufs: float = -14.0
     musica: str | None = None        # caminho do arquivo de música
-    musica_volume: float = 0.10
+    musica_volume: float = 0.35
 
 
 @dataclass

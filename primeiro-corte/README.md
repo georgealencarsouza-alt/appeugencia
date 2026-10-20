@@ -54,7 +54,8 @@ python -m motor renderizar --plano saida/plano.json -o saida/v2.mp4
 ```
 
 `--ficha` também aceita os presets `equilibrado`, `dinamico` e `calmo`. `--rapido` gera uma
-prévia mais leve.
+prévia mais leve. `--musica arquivo.mp3` coloca música de fundo (a voz abaixa a música
+automaticamente); `--trilha calmo|animado` gera uma trilha original, livre de direitos.
 
 O formato do roteiro está documentado em `motor/roteiro.py`. A ficha, campo a campo, em
 `motor/ficha.py`.
@@ -94,4 +95,5 @@ na tela, para dar para ver de onde veio cada trecho.
 - Detecção de rosto simples (Haar): falha com rosto de lado ou pouca luz.
 - Tom de cor medido é influenciado pelo cenário (parede azul "parece" estilo frio).
 - Sem B-roll, transições elaboradas nem animações: ficaram fora do MVP de propósito.
-- Música só por arquivo fornecido; não há biblioteca de trilhas.
+- Trilhas geradas são simples (piano e pad); para música de verdade, use um arquivo com direitos
+  de uso ou adicione o áudio dentro do próprio Instagram/TikTok.

@@ -122,7 +122,7 @@ def renderizar(plano: Plano, ficha: Ficha, destino: str | Path, *, rapido: bool 
             cadeias.append(f"[{musica_idx}:a]aresample=48000,aformat=channel_layouts=stereo,"
                            f"volume={ficha.audio.musica_volume},atrim=0:{total:.3f},"
                            f"afade=t=out:st={max(0.0, total - 1.0):.3f}:d=1[mus]")
-            cadeias.append("[mus][vozsc]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=300[musd]")
+            cadeias.append("[mus][vozsc]sidechaincompress=threshold=0.05:ratio=4:attack=20:release=350[musd]")
             cadeias.append("[voz][musd]amix=inputs=2:duration=first:normalize=0[aout]")
         else:
             cadeias.append("[ac]" + ",".join(pos_audio) + "[aout]")

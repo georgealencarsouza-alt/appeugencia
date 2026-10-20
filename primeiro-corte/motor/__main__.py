@@ -39,6 +39,8 @@ def main(argv: list[str] | None = None) -> int:
     k.add_argument("--ficha", help="arquivo JSON ou nome de preset (equilibrado, dinamico, calmo)")
     k.add_argument("-o", "--saida", required=True, help="pasta de saída")
     k.add_argument("--rapido", action="store_true", help="renderização rápida para pré-visualização")
+    k.add_argument("--musica", help="arquivo de música de fundo (com direitos de uso)")
+    k.add_argument("--trilha", choices=["calmo", "animado"], help="gera uma trilha original livre de direitos")
     k.add_argument("takes", nargs="+")
 
     e = sub.add_parser("extrair", help="Extrai a ficha de estilo de uma ou mais referências")
@@ -79,6 +81,14 @@ def main(argv: list[str] | None = None) -> int:
         from .pipeline import primeiro_corte
 
         ficha = _ficha(a.ficha)
+        if a.trilha:
+            from .trilha import gerar
+
+            Path(a.saida).mkdir(parents=True, exist_ok=True)
+            duracao = sum(__import__("motor.midia", fromlist=["info"]).info(t).duracao for t in a.takes) + 2
+            a.musica = str(gerar(Path(a.saida) / f"trilha_{a.trilha}.wav", duracao, a.trilha))
+        if a.musica:
+            ficha = ficha.com(**{"audio.musica": a.musica, "audio.musica_volume": 0.35})
         print(f"Ficha: {ficha.resumo()}")
         resumo = primeiro_corte(Roteiro.carregar(a.roteiro), a.takes, ficha, a.saida, rapido=a.rapido)
         print(json.dumps(resumo, ensure_ascii=False, indent=2))
