@@ -72,8 +72,11 @@ class TranscritorLocal(Transcritor):
         for i, (tok, t) in enumerate(zip(r.tokens, r.timestamps)):
             dur = duracoes[i] if i < len(duracoes) else 0.08
             prob = math.exp(logprobs[i]) if i < len(logprobs) else 1.0
-            inicia_palavra = tok.startswith(" ") or tok.startswith("▁") or atual is None
             limpo = tok.replace("▁", " ")
+            # o modelo cola números na palavra anterior ("menos50"): troca letra<->dígito também separa
+            troca_tipo = (atual is not None and limpo[:1].isalnum() and atual["texto"][-1:].isalnum()
+                          and limpo[:1].isdigit() != atual["texto"][-1:].isdigit())
+            inicia_palavra = tok.startswith(" ") or tok.startswith("▁") or atual is None or troca_tipo
             if not normalizar(limpo):  # pontuação: cola na palavra anterior
                 if atual is not None:
                     atual["texto"] += limpo.strip()

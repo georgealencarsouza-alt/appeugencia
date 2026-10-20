@@ -27,9 +27,24 @@ from pathlib import Path
 TIPOS_BLOCO = ("gancho", "desenvolvimento", "cta")
 
 
+def _numero_por_extenso(n: str) -> str:
+    try:
+        from num2words import num2words
+
+        return num2words(int(n), lang="pt_BR")
+    except Exception:
+        return n
+
+
 def normalizar(palavra: str) -> str:
-    """minúsculas, sem acento e sem pontuação: 'Preço?' -> 'preco'."""
-    sem_acento = unicodedata.normalize("NFKD", palavra.lower())
+    """minúsculas, sem acento e sem pontuação: 'Preço?' -> 'preco'; '50' -> 'cinquenta'.
+
+    Números viram extenso para que "50" no roteiro case com "cinquenta" falado
+    (e vice-versa), qualquer que seja a forma que o modelo de fala escolher.
+    """
+    texto = palavra.lower()
+    texto = re.sub(r"\d+", lambda m: _numero_por_extenso(m.group(0)), texto.replace(".", "").replace(",", ""))
+    sem_acento = unicodedata.normalize("NFKD", texto)
     sem_acento = "".join(c for c in sem_acento if not unicodedata.combining(c))
     return re.sub(r"[^a-z0-9]", "", sem_acento)
 

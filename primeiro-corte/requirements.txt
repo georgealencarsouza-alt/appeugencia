@@ -2,6 +2,7 @@ numpy>=1.26
 sherpa-onnx>=1.12
 soundfile>=0.12
 rapidfuzz>=3.0
+num2words>=0.5
 opencv-python-headless>=4.9
 anthropic>=0.40   # opcional: só para a extração com modelo de visão
 pytest>=8.0       # testes

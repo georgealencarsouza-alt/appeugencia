@@ -39,6 +39,7 @@ class Segmento:
     zoom_fim: float
     ancora: tuple[float, float] = (0.5, 0.4)   # ponto do quadro (0..1) que a reenquadração preserva
     palavras: list[PalavraSaida] = field(default_factory=list)
+    continua: bool = False   # continuação direta do segmento anterior (só muda o zoom; áudio sem fade)
 
     @property
     def duracao(self) -> float:
@@ -98,9 +99,52 @@ def montar(trechos: list[Trecho], roteiro: Roteiro, ficha: Ficha,
             palavras=palavras))
         t += dur
 
+    intervalo = INTERVALO_ZOOM_S[ficha.movimento.zoom_frequencia]
+    if intervalo is not None and ficha.movimento.zoom_tipo == "corte":
+        segmentos = _dividir_longos(segmentos, intervalo)
     _aplicar_zoom(segmentos, ficha)
     sobreposicoes = _sobreposicoes(segmentos, roteiro, ficha, t)
     return Plano(segmentos=segmentos, sobreposicoes=sobreposicoes, duracao=round(t, 3), ficha=ficha.para_dict())
+
+
+def _dividir_longos(segmentos: list[Segmento], intervalo: float) -> list[Segmento]:
+    """Divide trechos longos em pontos entre palavras para permitir punch-in sem cortar a fala.
+
+    Prefere dividir logo antes de uma palavra-chave (o punch-in cai nela) ou
+    depois de uma vírgula/fim de frase; senão, no espaço entre palavras mais
+    perto do intervalo da ficha.
+    """
+    saida: list[Segmento] = []
+    for seg in segmentos:
+        pedacos = [seg]
+        while pedacos[-1].duracao > intervalo * 1.4 and len(pedacos[-1].palavras) >= 4:
+            atual = pedacos[-1]
+            ps = atual.palavras
+            alvo = atual.saida_inicio + intervalo
+            melhor, nota_melhor = None, None
+            for i in range(2, len(ps) - 1):           # pelo menos 2 palavras de cada lado
+                corte = (ps[i - 1].fim + ps[i].inicio) / 2
+                if corte - atual.saida_inicio < intervalo * 0.5 or atual.saida_fim - corte < intervalo * 0.4:
+                    continue
+                nota = abs(corte - alvo)
+                if ps[i].chave:
+                    nota -= intervalo * 0.4
+                if ps[i - 1].texto.endswith((",", ".", "?", "!", ";", ":")):
+                    nota -= intervalo * 0.3
+                if nota_melhor is None or nota < nota_melhor:
+                    melhor, nota_melhor = (i, corte), nota
+            if melhor is None:
+                break
+            i, corte = melhor
+            desl = corte - atual.saida_inicio
+            meio_origem = atual.origem_inicio + desl
+            esquerda = Segmento(**{**atual.__dict__, "origem_fim": round(meio_origem, 3), "saida_fim": round(corte, 3),
+                                   "palavras": ps[:i]})
+            direita = Segmento(**{**atual.__dict__, "origem_inicio": round(meio_origem, 3),
+                                  "saida_inicio": round(corte, 3), "palavras": ps[i:], "continua": True})
+            pedacos[-1:] = [esquerda, direita]
+        saida.extend(pedacos)
+    return saida
 
 
 def _aplicar_zoom(segmentos: list[Segmento], ficha: Ficha) -> None:
@@ -137,6 +181,14 @@ def _aplicar_zoom(segmentos: list[Segmento], ficha: Ficha) -> None:
     if ficha.gancho.zoom_inicial and segmentos:
         primeiro = segmentos[0]
         primeiro.zoom_inicio, primeiro.zoom_fim = 1.0, max(1.06, min(z, 1.1))
+        # o punch-in seguinte precisa ser visível: se ficaria quase igual ao fim do push-in, volta para o aberto
+        if len(segmentos) > 1 and mov.zoom_tipo == "corte":
+            seg2 = segmentos[1]
+            if seg2.palavras and seg2.palavras[0].chave:
+                # palavra-chave: fecha ainda mais que o fim do push-in
+                seg2.zoom_inicio = seg2.zoom_fim = round(min(1.3, primeiro.zoom_fim + 0.1), 3)
+            elif abs(seg2.zoom_inicio - primeiro.zoom_fim) < 0.06:
+                seg2.zoom_inicio = seg2.zoom_fim = 1.0 if seg2.continua else z
 
 
 def _sobreposicoes(segmentos: list[Segmento], roteiro: Roteiro, ficha: Ficha, total: float) -> list[Sobreposicao]:

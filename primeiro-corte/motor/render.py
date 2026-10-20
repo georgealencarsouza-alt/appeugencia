@@ -89,9 +89,15 @@ def renderizar(plano: Plano, ficha: Ficha, destino: str | Path, *, rapido: bool 
         for i, seg in enumerate(plano.segmentos):
             cadeias.append(_filtro_video(seg, infos[seg.caminho], ficha, i))
             d = seg.duracao
+            proximo_continua = i + 1 < len(plano.segmentos) and plano.segmentos[i + 1].continua
+            fades = []
+            if not seg.continua:   # emenda de áudio contínuo não leva fade (evitaria um "buraco" na voz)
+                fades.append(f"afade=t=in:d={FADE_AUDIO_S}")
+            if not proximo_continua:
+                fades.append(f"afade=t=out:st={max(0.0, d - FADE_AUDIO_S):.3f}:d={FADE_AUDIO_S}")
             cadeias.append(f"[{i}:a]aresample=48000,aformat=channel_layouts=stereo,"
-                           f"afade=t=in:d={FADE_AUDIO_S},afade=t=out:st={max(0.0, d - FADE_AUDIO_S):.3f}:"
-                           f"d={FADE_AUDIO_S},apad=whole_dur={d:.3f},atrim=0:{d:.3f}[a{i}]")
+                           + "".join(f"{f}," for f in fades)
+                           + f"apad=whole_dur={d:.3f},atrim=0:{d:.3f}[a{i}]")
         n = len(plano.segmentos)
         cadeias.append("".join(f"[v{i}][a{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=1[vc][ac]")
 

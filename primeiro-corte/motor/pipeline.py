@@ -17,11 +17,13 @@ from .roteiro import Roteiro
 from .transcricao import Palavra, Transcritor, transcritor_padrao
 
 PASTA_CACHE = Path.home() / ".cache" / "primeiro-corte" / "transcricoes"
+# Mude quando a lógica de transcrição mudar, para invalidar o cache antigo.
+VERSAO_TRANSCRICAO = 2
 
 
 def _chave(caminho: Path) -> str:
     st = caminho.stat()
-    return hashlib.sha1(f"{caminho.resolve()}|{st.st_size}|{st.st_mtime_ns}".encode()).hexdigest()
+    return hashlib.sha1(f"v{VERSAO_TRANSCRICAO}|{caminho.resolve()}|{st.st_size}|{st.st_mtime_ns}".encode()).hexdigest()
 
 
 def transcrever_com_cache(caminho: Path, transcritor: Transcritor | None = None) -> list[Palavra]:

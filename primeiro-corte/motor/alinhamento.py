@@ -280,4 +280,13 @@ def trechos(alinhadas: list[FraseAlinhada], takes: list[Take], ritmo: Ritmo | No
                     fechar()
             grupo.append(pa)
         fechar()
+    return _sem_sobreposicao(saida)
+
+
+def _sem_sobreposicao(saida: list[Trecho]) -> list[Trecho]:
+    """Trechos vizinhos do mesmo take não podem repetir áudio: divide a folga entre eles."""
+    for a, b in zip(saida, saida[1:]):
+        if a.take == b.take and b.inicio < a.fim and b.inicio >= a.inicio:
+            meio = (a.palavras[-1].fim + b.palavras[0].inicio) / 2
+            a.fim, b.inicio = meio, meio
     return saida

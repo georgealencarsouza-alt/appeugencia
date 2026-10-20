@@ -51,3 +51,15 @@ def test_montagem_encadeia_tempos_e_cria_sobreposicoes(tmp_path):
     assert {s.tipo for s in plano.sobreposicoes} == {"gancho", "cta"}
     ass = gerar_ass(plano, preset("equilibrado"), tmp_path / "x.ass").read_text(encoding="utf-8")
     assert "PREÇO" in ass and "Dialogue:" in ass
+
+
+def test_trecho_longo_ganha_punch_in_sem_cortar_fala():
+    palavras = "Você sabia que você precisa de pelo menos cinquenta reais para poder me fazer um Pix?".split()
+    trs = [_trecho(0, "g", "gancho", palavras, 1.0)]
+    plano = montar(trs, ROTEIRO, preset("equilibrado"))   # 16 palavras * 0.4 s = 6.4 s
+    assert len(plano.segmentos) >= 2
+    assert all(s.continua for s in plano.segmentos[1:])
+    for a, b in zip(plano.segmentos, plano.segmentos[1:]):
+        assert a.origem_fim == b.origem_inicio                  # áudio contínuo, nada repetido nem perdido
+    zooms = [s.zoom_fim for s in plano.segmentos]
+    assert max(zooms) - min(zooms) >= 0.06                      # a troca de enquadramento é visível
