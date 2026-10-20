@@ -61,6 +61,16 @@ def _blocos(palavras: list[PalavraSaida], tamanho: int) -> list[list[PalavraSaid
     return blocos
 
 
+def _equilibrar(blocos: list[list[PalavraSaida]], maximo: int) -> list[list[PalavraSaida]]:
+    """Divide frases longas em partes de tamanho parecido (evita sobrar 'das outras.' sozinho)."""
+    saida = []
+    for b in blocos:
+        partes = -(-len(b) // maximo)   # teto
+        tam = -(-len(b) // partes)
+        saida.extend(b[i:i + tam] for i in range(0, len(b), tam))
+    return saida
+
+
 def gerar_ass(plano: Plano, ficha: Ficha, destino: str | Path) -> Path:
     leg = ficha.legenda
     fmt = ficha.formato
@@ -115,7 +125,7 @@ def gerar_ass(plano: Plano, ficha: Ficha, destino: str | Path) -> Path:
                 textos = [formatar(x, x is w) for x in bloco]
                 dialogo(ini, fim, "Legenda", _quebrar_formatado(bloco, textos, leg.caixa_alta))
     elif leg.modo == "frase":
-        blocos = _blocos(palavras, 12)
+        blocos = _equilibrar(_blocos(palavras, 10_000), 12)
         for b_i, bloco in enumerate(blocos):
             fim_bloco = blocos[b_i + 1][0].inicio if b_i + 1 < len(blocos) else bloco[-1].fim + 0.3
             textos = [formatar(x, False) for x in bloco]
@@ -124,7 +134,8 @@ def gerar_ass(plano: Plano, ficha: Ficha, destino: str | Path) -> Path:
 
     for s in plano.sobreposicoes:
         estilo = {"gancho": "Gancho", "titulo": "Titulo", "cta": "CTA"}[s.tipo]
-        texto = _escapar(s.texto.upper() if s.tipo != "titulo" else s.texto)
+        # segue o estilo da legenda: referência sem caixa alta gera título sem caixa alta
+        texto = _escapar(s.texto.upper() if (leg.caixa_alta and s.tipo != "titulo") else s.texto)
         entrada = "{\\fad(120,120)}"
         dialogo(s.inicio, s.fim, estilo, entrada + _quebrar(texto.split(), 20), camada=1)
 
